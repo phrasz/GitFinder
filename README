@@ -1,0 +1,16 @@
+~~ GitFinder2HTML
+~v 1.0a
+~d A BASH script to create a D3-powered, Local Git Repo Webfront end 
+
+:: 2013-06-07
+++ Created the program
+== Coding History w/ D3
+==    - Go through all the files find Date, Time, Size
+==    - Convert to JSON
+==    - Display with: http://nvd3.org/ghpages/scatter.html
+|| 2013-06-07
+
+:: 2013-06-10
+== Determine "parsed" options, shove 
+== file:///C:/Users/tOOBER/Downloads/warped/warped/index.html#examples
+|| 2013-06-10
