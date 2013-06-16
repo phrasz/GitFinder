@@ -35,31 +35,20 @@ print_help(){
  | |__| | | |_| |    | | | | | (_| |  __/ |
   \_____|_|\__|_|    |_|_| |_|\__,_|\___|_|
 
-Usage: exampleprog [options] SOURCE...
-	or:  exampleprog [options] DIRECTORY
-
-Write your man page description here.
-
 Options:
-      --help          print this help message
-      --version       print program version
-  -r, --remote         do alpa
-  -f, --file=STRING   Log File to be Converted
-  -d, --debug         debug program
-  -q, --quiet         quiet output
-  -v, --verbose       verbose output
+      --help          Print this help message
+      --version       Print program version
+  -d, --device        Change the default NIC
+  -r, --remote        Pull down remote IP
+  -v, --verbose       Verbose output
 
 Examples:
-
 The most common use is to run it like this.
-
-  $ exampleprog
+  $ ./GitFinder2HTML.sh -r
 
 But sometimes like this.
+  $ ./GitFinder2HTML.sh -r -d lan0 -v
 
-  $ exampleprog -q -a --bravo=foo
-
-Report bugs to <mailing-address>
 EOF
 }
 # ==============================================
@@ -70,7 +59,7 @@ print_version() {
 	$progname $version
 	A local replacement for GitHub/Bitkeeper ^_^
 
-	Copyright (C) @RELEASE_YEAR@ Free Software Foundation, Inc.
+	Free Software Foundation, Inc.
 	This is free software.  You may redistribute copies of it under the terms of
 	the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.
 	There is NO WARRANTY, to the extent permitted by law.
@@ -82,8 +71,8 @@ EOF
 # ==============================================
 
 
-Flags="af:dqvr"
-Words="help,version,alpha,file:,debug,quiet,verbose,remote"
+Flags="d:vr"
+Words="help,version,verbose,debug,device,remote,device"
 
 if $(getopt -T >/dev/null 2>&1) ; [ $? = 4 ] ; then # New Words getopt.
     OPTS=$(getopt -o $Flags --long $Words -n "$progname" -- "$@")
@@ -102,12 +91,11 @@ fi
 eval set -- "$OPTS"
 
 # INTIALIZATIONS:
-File="gitRepos"
 device="wlan0"
+File="gitRepos"
 remote=false
 verbose=false
 debug=false
-#port="22222"
 TotalProjectSize=0
 WebPage="index.html"
 Date=`date --iso-8601=minutes`
@@ -135,7 +123,7 @@ while [ $# -gt 0 ]; do
             ;;
 	-d | --device)
             device="$2"
-            shift
+            shift 2
             ;;
         -r | --remote)
             remote=true
@@ -157,14 +145,16 @@ while [ $# -gt 0 ]; do
 done
 
 
-
-echo "[DEBUGGING] My IP: "$IP
-echo "[DEBUGGING] My REMOTE IP: "$IP_REMOTE
+if $verbose;then
+echo "[GitFinder] This is your Device: $device"
+echo "[GitFinder] My IP: "$IP
+echo "[GitFinder] My REMOTE IP: "$IP_REMOTE
+fi
 
 if $remote; then
 	IP_REMOTE=`wget http://ipecho.net/plain -O - -q ; echo`
-	if $debugging; then
-		echo "[DEBUGGING] Your Remote IP is: "$IP
+	if $verbose; then
+		echo "[GitFinder] Your Remote IP is: "$IP
 	fi
 	#rm ip
 fi
@@ -251,16 +241,21 @@ cat >> $WebPage <<'Html_Part3'
 					<h3>Host Machine</h3><center>
 Html_Part3
 
-echo "[DEBUGGING] My hostname: "$HOST
-echo -e "\t\t\t\t\t\t$HOST" >> $WebPage
+if $verbose; then
+	echo "[GitFinder] My hostname: "$HOST
+fi
+
+echo -e "\t\t\t\t\t\t<center><p>$HOST</p></center>" >> $WebPage
 
 cat >> $WebPage <<'Html_Part4'
 					</center><br>
 					<h3>Number of Projects Hosted</h3><center>
 Html_Part4
 
-echo "[DEBUGGING] Total Projects: ${#GitArray[@]}"
-echo -e "\t\t\t\t\t\t${#GitArray[@]}" >> $WebPage
+if $verbose; then
+	echo "[GitFinder] Total Projects: ${#GitArray[@]}"
+fi
+echo -e "\t\t\t\t\t\t<center><p>${#GitArray[@]}</p></center>" >> $WebPage
 
 cat >> $WebPage <<'Html_Part5'
 					</center><br>
@@ -268,8 +263,11 @@ cat >> $WebPage <<'Html_Part5'
 Html_Part5
 
 Temp2=$(( TotalProjectSize / 1024 ))
-echo "[DEBUGGING] Total File Size: $TotalProjectSize KB, $Temp2 MB"
-echo -e "\t\t\t\t\t\t$TotalProjectSize KB, $Temp2 MB" >> $WebPage
+if $verbose; then
+	echo "[GitFinder] Total File Size: $TotalProjectSize KB, $Temp2 MB"
+fi
+
+echo -e "\t\t\t\t\t\t<center><p>$TotalProjectSize KB, $Temp2 MB</p></center>" >> $WebPage
 
 cat >> $WebPage <<'Html_Part6'
 					</center><br>
@@ -279,11 +277,10 @@ cat >> $WebPage <<'Html_Part6'
 				<div class="dropdown_2columns align_right">
 					<div class="col_2">
 						<h3>Why build Git Finder?</h3>
-							GitFinder was created in an attempt to allow a local Repo listing without too much extra hooliganry.
-						<br><br>
+							<p>GitFinder was created in an attempt to allow a local Repo listing without too much extra hooliganry.</p>
 						<h3>What About Gitweb?</h3>
-							I did look at some of the Git Web interfaces, and was impressed with their options/features. However, I wanted something that I can serve as files/static pages and do not want php/cgi.
-						<br><br>GitWeb might work for you and can be seen here:
+							<p>I did look at some of the Git Web interfaces, and was impressed with their options/features. However, I wanted something that I can serve as files/static pages and do not want php/cgi.</p>
+							<p>GitWeb might work for you and can be seen here:</p>
 							<a href="https://git.wiki.kernel.org/index.php/Gitweb">GitWeb</a>
 					</div>
 				</div>
@@ -303,10 +300,13 @@ do
 	new_title=`echo $new_str | tr -d  " "`
 
 	projectName=`echo $new_title | awk -F"/" '{ print $NF }'`
+	echo -e "\t\t\t<a id=\"$projectName\"></a>" >> $WebPage #$WebPage
 	echo -e "\t\t\t<div id=\"content2\">" >> $WebPage
-	echo -e "\t\t\t\t<h2><a id=\"$projectName\">$projectName</a></h2>" >> $WebPage #$WebPage
+	echo -e "\t\t\t\t<h2><a>$projectName</a></h2>" >> $WebPage #$WebPage
 
-	echo "[DEBUGGING] Project Name: $projectName"
+	if $verbose; then
+		echo "[GitFinder] Project Name: $projectName"
+	fi
 	git log | grep Date | awk '{print $4" "$3" "$6" at "$5}' > tempfile
 	GitTime=`head -n 1 tempfile`
 	git log | grep Author | awk '{print $2}' > tempfile
@@ -314,23 +314,25 @@ do
 	rm tempfile
 
 	echo -e "\t\t\t\t<p>Last Updated $GitTime by $GitAuthor</p>" >> $WebPage #$WebPage
+
+	ProjectSize=`du -sh "$new_str" | awk '{print $1}'`
+	if $verbose; then
+		echo "[GitFinder] Current Project Size: $ProjectSize"
+	fi
+
+	echo -e "\t\t\t\t<p> Project Size: $ProjectSize Bytes</p>" >> $WebPage
+
 	echo -e "\t\t\t\t<div class=\"details\">" >> $WebPage #$WebPage
 	echo -e "\t\t\t\t\t<p>" >> $WebPage #$WebPage
 	echo -e "\t\t\t\t\t<font size=\"5\">Local</font>" >> $WebPage #$WebPage
 	echo -e "\t\t\t\t\t<hr>" >> $WebPage #$WebPage
 
-	#foldersDeep=`echo $(echo $new_title  | wc -c) - $(echo $new_title  | tr -d '/' | wc -c) | bc`
-	#echo "[DEBUGGING] The project is $foldersDeep folders deep"
-
-	#echo "[DEBUGGING] Title GitArray[$i]: "$new_title
-	ProjectSize=`du -sh "$new_str" | awk '{print $1}'`
-	echo "[DEBUGGING] Current Project Size: $ProjectSize"
-#	cd "$new_str"
-
-        echo "[DEBUGGING] GitArray["$i"]: git clone ssh://$USER@$IP:$port\""$new_str"\""
-        echo "[DEBUGGING] GitArray["$i"]: git clone ssh://$USER@$IP_REMOTE:$port\""$new_str"\""
-	echo "[DEBUGGING] Last updated $GitTime by $GitAuthor"
+	if $verbose; then
+        	echo "[GitFinder] GitArray["$i"]: git clone ssh://$USER@$IP:$port\""$new_str"\""
+	        echo "[GitFinder] GitArray["$i"]: git clone ssh://$USER@$IP_REMOTE:$port\""$new_str"\""
+		echo "[GitFinder] Last updated $GitTime by $GitAuthor"
 	echo ""
+	fi
 	echo -e "\t\t\t\t\t\tgit clone ssh://$USER@$IP:$port\"$new_str\"" >> $WebPage #$WebPage
 	echo -e "\t\t\t\t\t<br><br><font size=\"5\">Remote</font>" >> $WebPage #$WebPage
 	echo -e "\t\t\t\t\t<hr>" >> $WebPage #$WebPage
