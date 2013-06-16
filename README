@@ -1,6 +1,6 @@
-~~ GitFinder2HTML
+~~ GitFinder
 ~v 1.0a
-~d A BASH script to create a D3-powered, Local Git Repo Webfront end 
+~d A BASH script to create a Local Git Repo Web frontend 
 
 :: 2013-06-07
 ++ Created the program
@@ -14,3 +14,12 @@
 == Determine "parsed" options, shove 
 == file:///C:/Users/tOOBER/Downloads/warped/warped/index.html#examples
 || 2013-06-10
+
+:: 2013-06-16
+++ Fixed ALL the needed code for parsing
+++ Fixed/added all scanning code
+++ Added new index.html output
+++ Added here documents to store index.html skeleton; paste scanned values into blanks
+== Merge either Outline from the 10th OR seshat into GitFinder
+|| 2013-06-16
+

@@ -308,9 +308,9 @@ do
 		echo "[GitFinder] Project Name: $projectName"
 	fi
 	#cd "$new_str"
-	git log  | grep Date | awk '{print $4" "$3" "$6" at "$5}' > tempfile
+	git --work-tree="$new_str" --git-dir="$new_str/.git" log  | grep Date | awk '{print $4" "$3" "$6" at "$5}' > tempfile
 	GitTime=`head -n 1 tempfile`
-	git log  | grep Author | awk '{print $2}' > tempfile
+	git --work-tree="$new_str" --git-dir="$new_str/.git" log  | grep Author | awk '{print $2}' > tempfile
 	GitAuthor=`head -n 1 tempfile`
 	rm tempfile
 
